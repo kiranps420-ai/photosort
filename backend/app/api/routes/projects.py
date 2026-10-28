@@ -54,12 +54,15 @@ async def upload_new_project(
     try:
         # Create a unique directory for this upload
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        upload_dir = DATA_DIR / "uploads" / f"{name}_{timestamp}"
+        safe_name = "".join(c for c in name if c.isalnum() or c in (' ', '_', '-')).strip() or "project"
+        upload_dir = DATA_DIR / "uploads" / f"{safe_name}_{timestamp}"
         upload_dir.mkdir(parents=True, exist_ok=True)
         
         # Save all uploaded files to the directory
+        from pathlib import Path
         for file in files:
-            file_path = upload_dir / file.filename
+            safe_filename = Path(file.filename).name if file.filename else "image.jpg"
+            file_path = upload_dir / safe_filename
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
                 

@@ -58,7 +58,18 @@ const ImportView = () => {
       navigate(`/processing?projectId=${project.id}`);
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.detail || 'Failed to create project. Please try again.');
+      let message = 'Failed to create project. Please try again.';
+      if (!err.response) {
+        message = 'Cannot connect to backend server. Please make sure the backend is running at http://127.0.0.1:8000.';
+      } else if (err.response?.data?.detail) {
+        const detail = err.response.data.detail;
+        if (typeof detail === 'string') {
+          message = detail;
+        } else if (Array.isArray(detail)) {
+          message = detail.map(d => d.msg || JSON.stringify(d)).join(', ');
+        }
+      }
+      setError(message);
     } finally {
       setIsLoading(false);
     }
